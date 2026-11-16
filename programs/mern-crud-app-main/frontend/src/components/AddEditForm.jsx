@@ -10,7 +10,9 @@ function AddEditForm() {
   useEffect(() => {
     if (id) {
       async function fetchPost() {
-        const response = await fetch(`http://localhost:3000/api/v1/posts/${id}`);
+        const response = await fetch(
+          `https://mern-app-vt09.onrender.com/api/v1/posts/${id}`
+        );
         const data = await response.json();
         setTitle(data.data.title);
         setContent(data.data.content);
@@ -21,10 +23,13 @@ function AddEditForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const method = id ? "PUT" : "POST";
+
     const url = id
-      ? `http://localhost:3000/api/v1/posts/${id}`
-      : "http://localhost:3000/api/v1/posts";
+      ? `https://mern-app-vt09.onrender.com/api/v1/posts/${id}`
+      : "https://mern-app-vt09.onrender.com/api/v1/posts";
+
     await fetch(url, {
       method,
       headers: {
@@ -32,12 +37,14 @@ function AddEditForm() {
       },
       body: JSON.stringify({ title, content }),
     });
+
     navigate("/");
   };
 
   return (
     <>
       <div>{id ? "Edit Form" : "Add Form"}</div>
+
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -45,12 +52,17 @@ function AddEditForm() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
+
         <br />
+
         <textarea
           placeholder="Content"
           value={content}
-          onChange={(e) => setContent(e.target.value)}></textarea>
+          onChange={(e) => setContent(e.target.value)}
+        ></textarea>
+
         <br />
+
         <button type="submit">{id ? "Update" : "Add"}</button>
       </form>
     </>
