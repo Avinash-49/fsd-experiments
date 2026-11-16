@@ -5,100 +5,159 @@ import cors from "cors";
 import morgan from "morgan";
 
 dotenv.config();
+
 const app = express();
 
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(cors());
 app.use(morgan("dev"));
 
+// Port
 const port = process.env.PORT || 3000;
+
+// MongoDB Atlas
 const mongoUri = process.env.MONGO_URI;
 const dbName = process.env.DB_NAME;
 
 // Connect to MongoDB
 mongoose
   .connect(mongoUri, { dbName })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("Failed to connect to MongoDB", err));
+  .then(() => {
+    console.log("Connected to MongoDB Atlas");
+  })
+  .catch((err) => {
+    console.error("Failed to connect to MongoDB Atlas:", err);
+  });
 
-  // Define the Post schema and model
+// Schema
 const postSchema = new mongoose.Schema({
   title: String,
   content: String,
 });
+
+// Model
 const Post = mongoose.model("Post", postSchema);
 
-//CRUD operations for Blog Posts
-// Create a new post
+// CREATE
 app.post("/api/v1/posts", async (req, res) => {
   try {
     const post = new Post(req.body);
     await post.save();
-    res.status(201).send({ message: "Post created successfully", data: post });
+
+    res.status(201).json({
+      message: "Post created successfully",
+      data: post,
+    });
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).json({
+      message: "Failed to create post",
+      error: err.message,
+    });
   }
 });
-//Read all posts
+
+// READ ALL
 app.get("/api/v1/posts", async (req, res) => {
   try {
     const posts = await Post.find();
-    res
-      .status(200)
-      .send({ message: "Posts retrieved successfully", data: posts });
+
+    res.status(200).json({
+      message: "Posts retrieved successfully",
+      data: posts,
+    });
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).json({
+      message: "Failed to retrieve posts",
+      error: err.message,
+    });
   }
 });
 
-//Read post by id
+// READ BY ID
 app.get("/api/v1/posts/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
+
     if (!post) {
-      return res.status(404).send({ message: "Post not found" });
+      return res.status(404).json({
+        message: "Post not found",
+      });
     }
-    res
-      .status(200)
-      .send({ message: "Post retrieved successfully", data: post });
+
+    res.status(200).json({
+      message: "Post retrieved successfully",
+      data: post,
+    });
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).json({
+      message: "Invalid post ID",
+      error: err.message,
+    });
   }
 });
 
-//Update post by id
+// UPDATE
 app.put("/api/v1/posts/:id", async (req, res) => {
   try {
-    const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const post = await Post.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
+
     if (!post) {
-      return res.status(404).send({ message: "Post not found" });
+      return res.status(404).json({
+        message: "Post not found",
+      });
     }
-    res.status(200).send({ message: "Post updated successfully", data: post });
+
+    res.status(200).json({
+      message: "Post updated successfully",
+      data: post,
+    });
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).json({
+      message: "Failed to update post",
+      error: err.message,
+    });
   }
 });
-//Delete post by id
+
+// DELETE
 app.delete("/api/v1/posts/:id", async (req, res) => {
   try {
     const post = await Post.findByIdAndDelete(req.params.id);
+
     if (!post) {
-      return res.status(404).send({ message: "Post not found" });
+      return res.status(404).json({
+        message: "Post not found",
+      });
     }
-    res.status(200).send({ message: "Post deleted successfully", data: post });
+
+    res.status(200).json({
+      message: "Post deleted successfully",
+      data: post,
+    });
   } catch (err) {
-    res.status(400).send(err);
+    res.status(400).json({
+      message: "Failed to delete post",
+      error: err.message,
+    });
   }
 });
-//Test route
+
+// Test route
 app.get("/", (req, res) => {
-  res.send({ message: "Welcome to Express Test" });
+  res.json({
+    message: "Welcome to Express Test",
+  });
 });
-//Start the server
+
+// Start server
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Server is running on port ${port}`);
 });
